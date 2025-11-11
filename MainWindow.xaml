@@ -1,0 +1,35 @@
+<Window x:Class="ArcGisWpfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:esri="http://schemas.esri.com/arcgis/runtime/2022"
+        mc:Ignorable="d"
+        Title="ArcGIS Runtime 示例"
+        Width="1000"
+        Height="650">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Background="#1F1F1F"
+                Padding="12 8">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="ZoomButton"
+                        Width="150"
+                        Margin="0 0 12 0"
+                        Click="OnZoomToLayerClick"
+                        Content="定位示例图层"/>
+                <TextBlock Text="示例：加载 ArcGIS Online 要素图层并一键缩放"
+                           VerticalAlignment="Center"
+                           Foreground="White"
+                           FontSize="14"/>
+            </StackPanel>
+        </Border>
+
+        <esri:MapView x:Name="MyMapView"
+                      Grid.Row="1" />
+    </Grid>
+</Window>
