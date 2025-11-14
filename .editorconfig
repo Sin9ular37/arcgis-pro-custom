@@ -1,0 +1,17 @@
+root = true
+
+# 默认文本编码与换行
+[*]
+charset = utf-8-bom
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# 代码文件
+[*.{cs,xaml,csproj,props,targets}]
+charset = utf-8-bom
+
+# 文档
+[*.{md,txt}]
+charset = utf-8-bom
+

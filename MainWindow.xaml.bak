@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:esri="http://schemas.esri.com/arcgis/runtime/2013"
         mc:Ignorable="d"
-        Title="ArcGIS &#x670D;&#x52A1;&#x6F14;&#x793A;" Height="600" Width="1100">
+        Title="ArcGIS 服务加载器" Height="600" Width="1100">
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto"/>
@@ -16,30 +16,30 @@
       <ColumnDefinition Width="340"/>
     </Grid.ColumnDefinitions>
 
-    <!-- Top bar: URL + Load button -->
+    <!-- 顶部：URL 输入与加载按钮，跨两列 -->
     <Border Grid.ColumnSpan="2" Background="#1F1F1F" Padding="10">
       <DockPanel LastChildFill="False">
         <TextBox x:Name="UrlBox" Width="700" Margin="0,0,8,0" DockPanel.Dock="Left"
                  VerticalAlignment="Center"
-                 ToolTip="&#x8F93;&#x5165; ArcGIS REST &#x670D;&#x52A1; URL&#xFF0C;&#x4F8B;&#x5982;&#xFF1A;https://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer"/>
-        <Button x:Name="LoadBtn" Width="120" Content="&#x52A0;&#x8F7D;" Click="OnLoadClick"/>
+                 ToolTip="输入 ArcGIS REST 服务 URL，例如：https://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer"/>
+        <Button x:Name="LoadBtn" Width="120" Content="加载" Click="OnLoadClick"/>
       </DockPanel>
     </Border>
 
-    <!-- Left: map view -->
+    <!-- 左侧：地图视图 -->
     <esri:MapView x:Name="MapView" Grid.Row="1" Grid.Column="0"/>
 
-    <!-- Right: GDB import panel -->
+    <!-- 右侧：GDB 导入面板 -->
     <Border Grid.Row="1" Grid.Column="1" BorderBrush="#DDD" BorderThickness="0,0,0,0" Padding="12">
       <StackPanel>
-        <TextBlock Text="&#x6570;&#x636E;&#x5BFC;&#x5165;" FontWeight="Bold" FontSize="14" Margin="0,0,0,8"/>
-        <TextBlock Text="&#x9009;&#x62E9;&#x672C;&#x5730;&#x79FB;&#x52A8;&#x5730;&#x7406;&#x6570;&#x636E;&#x5E93;&#xFF1A;" Margin="0,0,0,6"/>
+        <TextBlock Text="数据导入" FontWeight="Bold" FontSize="14" Margin="0,0,0,8"/>
+        <TextBlock Text="选择本地地理数据库：" Margin="0,0,0,6"/>
         <TextBox x:Name="GdbPathBox" Margin="0,0,0,6" IsReadOnly="True"/>
         <StackPanel Orientation="Horizontal">
-          <Button x:Name="BrowseGdbBtn" Content="&#x6D4F;&#x89C8;..." Width="90" Click="OnBrowseGdbClick"/>
-          <Button x:Name="ImportGdbBtn" Content="&#x5BFC;&#x5165;" Width="90" Margin="8,0,0,0" Click="OnImportGdbClick"/>
+          <Button x:Name="BrowseGdbBtn" Content="浏览..." Width="90" Click="OnBrowseGdbClick"/>
+          <Button x:Name="ImportGdbBtn" Content="导入" Width="90" Margin="8,0,0,0" Click="OnImportGdbClick"/>
         </StackPanel>
-        <TextBlock Text="&#x8BF4;&#x660E;&#xFF1A;&#x4EC5;&#x652F;&#x6301; .geodatabase&#xFF08;&#x79FB;&#x52A8;&#x5730;&#x7406;&#x6570;&#x636E;&#x5E93;&#xFF09;&#xFF1B;.gdb&#xFF08;&#x6587;&#x4EF6;&#x5730;&#x7406;&#x6570;&#x636E;&#x5E93;&#xFF09;&#x6682;&#x4E0D;&#x76F4;&#x63A5;&#x652F;&#x6301;"
+        <TextBlock Text="说明：优先支持 .geodatabase（移动地理数据库）。.gdb（文件地理数据库）暂不直接支持"
                    TextWrapping="Wrap" Foreground="#666" Margin="0,8,0,0"/>
       </StackPanel>
     </Border>

@@ -21,7 +21,7 @@ public partial class MainWindow : Window
 
     private void InitializeMap()
     {
-        // ��ʼ�յ�ͼ���û����ط���������ݺ�������ͼ��
+        // Initialize an empty map
         MapView.Map = new Map();
     }
 
@@ -30,24 +30,24 @@ public partial class MainWindow : Window
         var url = (UrlBox.Text ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(url))
         {
-            MessageBox.Show("������ ArcGIS REST ���� URL��");
+            MessageBox.Show("\u8BF7\u8F93\u5165 ArcGIS REST \u670D\u52A1 URL\u3002");
             return;
         }
 
         LoadBtn.IsEnabled = false;
         try { await LoadServiceAsync(url); }
-        catch (Exception ex) { MessageBox.Show($"����ʧ�ܣ�{ex.Message}"); }
+        catch (Exception ex) { MessageBox.Show($"\u52A0\u8F7D\u5931\u8D25\uFF1A{ex.Message}"); }
         finally { LoadBtn.IsEnabled = true; }
     }
 
     private async Task LoadServiceAsync(string url)
     {
-        // ���֮ǰ��ͼ�� — 确保 Map 非空再清空，避免空引用告警
+        // Ensure map is not null and clear layers
         (MapView.Map ??= new Map()).OperationalLayers.Clear();
 
         Exception? lastError = null;
 
-        // 1) Map Server����̬ͼ�����
+        // 1) Map Server - dynamic map service
         try
         {
             var img = new ArcGISMapImageLayer(new Uri(url));
@@ -58,7 +58,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { lastError = ex; }
 
-        // 2) դ����Ƭ����TiledLayer��
+        // 2) Tiled service
         try
         {
             var tiled = new ArcGISTiledLayer(new Uri(url));
@@ -69,7 +69,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { lastError = ex; }
 
-        // 3) ʸ����Ƭ����VectorTileLayer��
+        // 3) Vector tile service
         try
         {
             var vtl = new ArcGISVectorTiledLayer(new Uri(url));
@@ -80,7 +80,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { lastError = ex; }
 
-        // 4) Ҫ�ط���FeatureServer ͼ���������
+        // 4) Feature service - layer
         try
         {
             var table = new ServiceFeatureTable(new Uri(url));
@@ -92,7 +92,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { lastError = ex; }
 
-        throw lastError ?? new InvalidOperationException("�޷�ʶ��ķ������͡�");
+        throw lastError ?? new InvalidOperationException("\u65E0\u6CD5\u8BC6\u522B\u7684\u670D\u52A1\u7C7B\u578B\u3002");
     }
 
     private async Task ZoomToExtentAsync(Geometry? extent)
@@ -101,13 +101,13 @@ public partial class MainWindow : Window
         await MapView.SetViewpointAsync(new Viewpoint(extent));
     }
 
-    // �Ҳࣺ����뵼�� GDB���ƶ��������ݿ� .geodatabase��
+    // Right panel: import mobile geodatabase (.geodatabase)
     private void OnBrowseGdbClick(object sender, RoutedEventArgs e)
     {
         var dlg = new OpenFileDialog
         {
-            Title = "ѡ���ƶ��������ݿ� (.geodatabase)",
-            Filter = "�ƶ��������ݿ� (*.geodatabase)|*.geodatabase|�����ļ� (*.*)|*.*"
+            Title = "\u9009\u62E9\u79FB\u52A8\u5730\u7406\u6570\u636E\u5E93 (.geodatabase)",
+            Filter = "\u79FB\u52A8\u5730\u7406\u6570\u636E\u5E93 (*.geodatabase)|*.geodatabase|\u6240\u6709\u6587\u4EF6 (*.*)|*.*"
         };
         if (dlg.ShowDialog() == true)
         {
@@ -120,37 +120,35 @@ public partial class MainWindow : Window
         var path = (GdbPathBox.Text ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(path))
         {
-            MessageBox.Show("����ѡ�� .geodatabase �ļ���");
+            MessageBox.Show("\u8BF7\u5148\u9009\u62E9 .geodatabase \u6587\u4EF6\u3002");
             return;
         }
 
         if (Directory.Exists(path) && path.EndsWith(".gdb", StringComparison.OrdinalIgnoreCase))
         {
-            MessageBox.Show("��ǰʾ����ֱ��֧���ļ��������ݿ� (.gdb)������ ArcGIS Pro �н��䵼��Ϊ�ƶ��������ݿ� (.geodatabase) ���ٵ��롣");
+            MessageBox.Show("\u5F53\u524D\u793A\u4F8B\u4E0D\u76F4\u63A5\u652F\u6301\u6587\u4EF6\u5730\u7406\u6570\u636E\u5E93 (.gdb)\u3002\u8BF7\u5728 ArcGIS Pro \u4E2D\u5BFC\u51FA\u4E3A\u79FB\u52A8\u5730\u7406\u6570\u636E\u5E93 (.geodatabase) \u540E\u518D\u5BFC\u5165\u3002");
             return;
         }
 
         if (!File.Exists(path))
         {
-            MessageBox.Show("·����Ч���ļ������ڡ�");
+            MessageBox.Show("\u8DEF\u5F84\u65E0\u6548\u6216\u6587\u4EF6\u4E0D\u5B58\u5728\u3002");
             return;
         }
 
         try
         {
             var gdb = await Geodatabase.OpenAsync(path);
-            // ��Ҫ�ر�����ͼ��
             var tables = gdb.GeodatabaseFeatureTables.ToList();
             if (tables.Count == 0)
             {
-                MessageBox.Show("�õ������ݿ���û��Ҫ�ر���");
+                MessageBox.Show("\u8BE5\u79FB\u52A8\u5730\u7406\u6570\u636E\u5E93\u4E2D\u6CA1\u6709\u8981\u7D20\u8868\u3002");
                 return;
             }
 
-            // 确保 Map 非空再清空，避免空引用告警
             (MapView.Map ??= new Map()).OperationalLayers.Clear();
 
-            Envelope? union = null; // 逐表合并范围
+            Envelope? union = null; // combine extents
             foreach (var table in tables)
             {
                 await table.LoadAsync();
@@ -158,7 +156,7 @@ public partial class MainWindow : Window
                 MapView.Map.OperationalLayers.Add(layer);
                 if (table.Extent != null)
                 {
-                    // 使用 CombineExtents 返回 Envelope，避免 Geometry 到 Envelope 的转换错误
+                    // keep return type Envelope by using CombineExtents
                     union = union == null
                         ? table.Extent
                         : GeometryEngine.CombineExtents(union, table.Extent);
@@ -170,8 +168,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"����ʧ�ܣ�{ex.Message}");
+            MessageBox.Show($"\u5BFC\u5165\u5931\u8D25\uFF1A{ex.Message}");
         }
     }
 }
-
