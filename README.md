@@ -50,3 +50,8 @@ dotnet run
 - **报错找不到 `dotnet`**：未安装 .NET 8 SDK。
 - **无法加载地图**：检查网络连接或 API Key 是否有效；或者改为加载本地数据。
 - **XAML 编译错误**：确保使用 Visual Studio 2022 或执行 `dotnet build`，因为项目需要 WPF 支持。
+
+命令行
+dotnet restore .\ArcGisMapDemo.csproj
+dotnet build .\ArcGisMapDemo.csproj -c Debug
+dotnet run --project .\ArcGisMapDemo.csproj
