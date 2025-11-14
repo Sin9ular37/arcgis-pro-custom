@@ -42,15 +42,18 @@ public partial class MainWindow : Window
 
     private async Task LoadServiceAsync(string url)
     {
-        // Ensure map is not null and clear layers
-        (MapView.Map ??= new Map()).OperationalLayers.Clear();
+        // Ensure map exists; do not clear to allow coexistence with imported layers
+        MapView.Map ??= new Map();
 
         Exception? lastError = null;
 
         // 1) Map Server - dynamic map service
         try
         {
-            var img = new ArcGISMapImageLayer(new Uri(url));
+            var img = new ArcGISMapImageLayer(new Uri(url))
+            {
+                Name = GetLayerNameFromUrl(url, "MapImage")
+            };
             await img.LoadAsync();
             MapView.Map.OperationalLayers.Add(img);
             await ZoomToExtentAsync(img.FullExtent);
@@ -61,7 +64,10 @@ public partial class MainWindow : Window
         // 2) Tiled service
         try
         {
-            var tiled = new ArcGISTiledLayer(new Uri(url));
+            var tiled = new ArcGISTiledLayer(new Uri(url))
+            {
+                Name = GetLayerNameFromUrl(url, "Tiled")
+            };
             await tiled.LoadAsync();
             MapView.Map.OperationalLayers.Add(tiled);
             await ZoomToExtentAsync(tiled.FullExtent);
@@ -72,7 +78,10 @@ public partial class MainWindow : Window
         // 3) Vector tile service
         try
         {
-            var vtl = new ArcGISVectorTiledLayer(new Uri(url));
+            var vtl = new ArcGISVectorTiledLayer(new Uri(url))
+            {
+                Name = GetLayerNameFromUrl(url, "VectorTile")
+            };
             await vtl.LoadAsync();
             MapView.Map.OperationalLayers.Add(vtl);
             await ZoomToExtentAsync(vtl.FullExtent);
@@ -84,7 +93,10 @@ public partial class MainWindow : Window
         try
         {
             var table = new ServiceFeatureTable(new Uri(url));
-            var fl = new FeatureLayer(table);
+            var fl = new FeatureLayer(table)
+            {
+                Name = GetLayerNameFromUrl(url, "FeatureLayer")
+            };
             await fl.LoadAsync();
             MapView.Map.OperationalLayers.Add(fl);
             await ZoomToExtentAsync(fl.FullExtent);
@@ -146,13 +158,18 @@ public partial class MainWindow : Window
                 return;
             }
 
-            (MapView.Map ??= new Map()).OperationalLayers.Clear();
+            // Ensure map exists; do not clear to allow coexistence with online layers
+            MapView.Map ??= new Map();
 
             Envelope? union = null; // combine extents
             foreach (var table in tables)
             {
                 await table.LoadAsync();
-                var layer = new FeatureLayer(table);
+                var layer = new FeatureLayer(table)
+                {
+                    // Prefer table's display name if available
+                    Name = table.TableName
+                };
                 MapView.Map.OperationalLayers.Add(layer);
                 if (table.Extent != null)
                 {
@@ -170,5 +187,58 @@ public partial class MainWindow : Window
         {
             MessageBox.Show($"\u5BFC\u5165\u5931\u8D25\uFF1A{ex.Message}");
         }
+    }
+
+    // Build and open a simple layer visibility context menu
+    private void OnLayerControlClick(object sender, RoutedEventArgs e)
+    {
+        if (MapView.Map == null) return;
+        var layers = MapView.Map.OperationalLayers;
+        var menu = new System.Windows.Controls.ContextMenu();
+
+        foreach (var layer in layers)
+        {
+            var item = new System.Windows.Controls.MenuItem
+            {
+                Header = string.IsNullOrWhiteSpace(layer.Name) ? layer.GetType().Name : layer.Name,
+                IsCheckable = true,
+                IsChecked = layer.IsVisible,
+                Tag = layer
+            };
+            item.Click += (_, __) =>
+            {
+                if (item.Tag is Esri.ArcGISRuntime.Mapping.Layer l)
+                {
+                    l.IsVisible = item.IsChecked;
+                }
+            };
+            menu.Items.Add(item);
+        }
+
+        if (menu.Items.Count == 0)
+        {
+            var empty = new System.Windows.Controls.MenuItem
+            {
+                Header = "\u65E0\u4EFB\u4F55\u56FE\u5C42",
+                IsEnabled = false
+            };
+            menu.Items.Add(empty);
+        }
+
+        menu.PlacementTarget = LayerCtlBtn;
+        menu.IsOpen = true;
+    }
+
+    // Derive a readable layer name from URL
+    private static string GetLayerNameFromUrl(string url, string fallback)
+    {
+        try
+        {
+            var u = new Uri(url);
+            var seg = u.Segments.LastOrDefault()?.TrimEnd('/');
+            if (!string.IsNullOrWhiteSpace(seg)) return seg;
+        }
+        catch { /* ignore */ }
+        return fallback;
     }
 }

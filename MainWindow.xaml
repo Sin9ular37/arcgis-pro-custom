@@ -26,8 +26,17 @@
       </DockPanel>
     </Border>
 
-    <!-- Left: map view -->
-    <esri:MapView x:Name="MapView" Grid.Row="1" Grid.Column="0"/>
+    <!-- Left: map view with a floating layer control button -->
+    <Grid Grid.Row="1" Grid.Column="0">
+      <esri:MapView x:Name="MapView"/>
+      <Button x:Name="LayerCtlBtn"
+              Content="&#x56FE;&#x5C42;"
+              Width="72" Height="28"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Top"
+              Margin="10"
+              Click="OnLayerControlClick"/>
+    </Grid>
 
     <!-- Right: GDB import panel -->
     <Border Grid.Row="1" Grid.Column="1" BorderBrush="#DDD" BorderThickness="0,0,0,0" Padding="12">
