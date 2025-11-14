@@ -1,6 +1,8 @@
 ﻿# ArcGisMapDemo 使用说明
 
-本项目是一个基于 ArcGIS Runtime for .NET 的 WPF 示例，用于加载 MapServer/Tiled/VectorTile/FeatureServer 服务，并支持导入本地移动地理数据库（.geodatabase）。
+这是一个基于ArcGIS Runtime for .NET的开发学习示例，它仿照ArcGIS Pro进行开发。该示例支持加载MapServer、Tiled、Vector Tile和Feature Server，并可导入.geodatabase文件。本地和在线图层可以叠加显示，并可控制显示和隐藏。此外，它还支持自动合并范围并缩放视图。该示例已适配.NET 8，并统一使用UTF-8编码，适用于快速验证常见GIS数据的接入和可视化。
+
+This is a development learning example based on ArcGIS Runtime for .NET, which is modelled on ArcGIS Pro. The example supports loading MapServer, Tiled, Vector Tile and Feature Server, and can import .geodatabase files. Local and online layers can be displayed in a stack and the display can be controlled to show or hide layers. In addition, it supports automatic range merging and zooming in on the view. The example has been adapted to .NET 8 and uses UTF-8 encoding throughout, making it ideal for quickly verifying the accessibility and visualisation of common GIS data.
 
 ## 环境准备
 
