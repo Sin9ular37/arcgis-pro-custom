@@ -50,6 +50,10 @@
         </StackPanel>
         <TextBlock Text="&#x8BF4;&#x660E;&#xFF1A;&#x4EC5;&#x652F;&#x6301; .geodatabase&#xFF08;&#x79FB;&#x52A8;&#x5730;&#x7406;&#x6570;&#x636E;&#x5E93;&#xFF09;&#xFF1B;.gdb&#xFF08;&#x6587;&#x4EF6;&#x5730;&#x7406;&#x6570;&#x636E;&#x5E93;&#xFF09;&#x6682;&#x4E0D;&#x76F4;&#x63A5;&#x652F;&#x6301;"
                    TextWrapping="Wrap" Foreground="#666" Margin="0,8,0,0"/>
+
+        <!-- Imported table list -->
+        <TextBlock Text="&#x5DF2;&#x5BFC;&#x5165;&#x8868;&#xFF1A;" Margin="0,12,0,6"/>
+        <ListBox x:Name="TableList" Height="200"/>
       </StackPanel>
     </Border>
   </Grid>

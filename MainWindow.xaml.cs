@@ -152,6 +152,18 @@ public partial class MainWindow : Window
         {
             var gdb = await Geodatabase.OpenAsync(path);
             var tables = gdb.GeodatabaseFeatureTables.ToList();
+
+            // Update table list on the right
+            try
+            {
+                var names = tables
+                    .Select(t => string.IsNullOrWhiteSpace(t.TableName) ? "(unnamed)" : t.TableName)
+                    .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                TableList.ItemsSource = names;
+            }
+            catch { /* ignore UI errors */ }
+
             if (tables.Count == 0)
             {
                 MessageBox.Show("\u8BE5\u79FB\u52A8\u5730\u7406\u6570\u636E\u5E93\u4E2D\u6CA1\u6709\u8981\u7D20\u8868\u3002");
