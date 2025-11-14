@@ -21,7 +21,7 @@ public partial class MainWindow : Window
 
     private void InitializeMap()
     {
-        // 初始空地图，用户加载服务或导入数据后再添加图层
+        // ��ʼ�յ�ͼ���û����ط���������ݺ�������ͼ��
         MapView.Map = new Map();
     }
 
@@ -30,24 +30,24 @@ public partial class MainWindow : Window
         var url = (UrlBox.Text ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(url))
         {
-            MessageBox.Show("请输入 ArcGIS REST 服务 URL。");
+            MessageBox.Show("������ ArcGIS REST ���� URL��");
             return;
         }
 
         LoadBtn.IsEnabled = false;
         try { await LoadServiceAsync(url); }
-        catch (Exception ex) { MessageBox.Show($"加载失败：{ex.Message}"); }
+        catch (Exception ex) { MessageBox.Show($"����ʧ�ܣ�{ex.Message}"); }
         finally { LoadBtn.IsEnabled = true; }
     }
 
     private async Task LoadServiceAsync(string url)
     {
-        // 清空之前的图层
-        MapView.Map.OperationalLayers.Clear();
+        // ���֮ǰ��ͼ�� — 确保 Map 非空再清空，避免空引用告警
+        (MapView.Map ??= new Map()).OperationalLayers.Clear();
 
         Exception? lastError = null;
 
-        // 1) Map Server（动态图像服务）
+        // 1) Map Server����̬ͼ�����
         try
         {
             var img = new ArcGISMapImageLayer(new Uri(url));
@@ -58,7 +58,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { lastError = ex; }
 
-        // 2) 栅格瓦片服务（TiledLayer）
+        // 2) դ����Ƭ����TiledLayer��
         try
         {
             var tiled = new ArcGISTiledLayer(new Uri(url));
@@ -69,7 +69,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { lastError = ex; }
 
-        // 3) 矢量瓦片服务（VectorTileLayer）
+        // 3) ʸ����Ƭ����VectorTileLayer��
         try
         {
             var vtl = new ArcGISVectorTiledLayer(new Uri(url));
@@ -80,7 +80,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { lastError = ex; }
 
-        // 4) 要素服务（FeatureServer 图层或服务根）
+        // 4) Ҫ�ط���FeatureServer ͼ���������
         try
         {
             var table = new ServiceFeatureTable(new Uri(url));
@@ -92,7 +92,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { lastError = ex; }
 
-        throw lastError ?? new InvalidOperationException("无法识别的服务类型。");
+        throw lastError ?? new InvalidOperationException("�޷�ʶ��ķ������͡�");
     }
 
     private async Task ZoomToExtentAsync(Geometry? extent)
@@ -101,13 +101,13 @@ public partial class MainWindow : Window
         await MapView.SetViewpointAsync(new Viewpoint(extent));
     }
 
-    // 右侧：浏览与导入 GDB（移动地理数据库 .geodatabase）
+    // �Ҳࣺ����뵼�� GDB���ƶ��������ݿ� .geodatabase��
     private void OnBrowseGdbClick(object sender, RoutedEventArgs e)
     {
         var dlg = new OpenFileDialog
         {
-            Title = "选择移动地理数据库 (.geodatabase)",
-            Filter = "移动地理数据库 (*.geodatabase)|*.geodatabase|所有文件 (*.*)|*.*"
+            Title = "ѡ���ƶ��������ݿ� (.geodatabase)",
+            Filter = "�ƶ��������ݿ� (*.geodatabase)|*.geodatabase|�����ļ� (*.*)|*.*"
         };
         if (dlg.ShowDialog() == true)
         {
@@ -120,42 +120,49 @@ public partial class MainWindow : Window
         var path = (GdbPathBox.Text ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(path))
         {
-            MessageBox.Show("请先选择 .geodatabase 文件。");
+            MessageBox.Show("����ѡ�� .geodatabase �ļ���");
             return;
         }
 
         if (Directory.Exists(path) && path.EndsWith(".gdb", StringComparison.OrdinalIgnoreCase))
         {
-            MessageBox.Show("当前示例不直接支持文件地理数据库 (.gdb)。请在 ArcGIS Pro 中将其导出为移动地理数据库 (.geodatabase) 后再导入。");
+            MessageBox.Show("��ǰʾ����ֱ��֧���ļ��������ݿ� (.gdb)������ ArcGIS Pro �н��䵼��Ϊ�ƶ��������ݿ� (.geodatabase) ���ٵ��롣");
             return;
         }
 
         if (!File.Exists(path))
         {
-            MessageBox.Show("路径无效或文件不存在。");
+            MessageBox.Show("·����Ч���ļ������ڡ�");
             return;
         }
 
         try
         {
             var gdb = await Geodatabase.OpenAsync(path);
-            // 按要素表创建图层
+            // ��Ҫ�ر�����ͼ��
             var tables = gdb.GeodatabaseFeatureTables.ToList();
             if (tables.Count == 0)
             {
-                MessageBox.Show("该地理数据库中没有要素表。");
+                MessageBox.Show("�õ������ݿ���û��Ҫ�ر���");
                 return;
             }
 
-            MapView.Map.OperationalLayers.Clear();
-            Envelope? union = null;
+            // 确保 Map 非空再清空，避免空引用告警
+            (MapView.Map ??= new Map()).OperationalLayers.Clear();
+
+            Envelope? union = null; // 逐表合并范围
             foreach (var table in tables)
             {
                 await table.LoadAsync();
                 var layer = new FeatureLayer(table);
                 MapView.Map.OperationalLayers.Add(layer);
                 if (table.Extent != null)
-                    union = union == null ? table.Extent : union.Union(table.Extent);
+                {
+                    // 使用 CombineExtents 返回 Envelope，避免 Geometry 到 Envelope 的转换错误
+                    union = union == null
+                        ? table.Extent
+                        : GeometryEngine.CombineExtents(union, table.Extent);
+                }
             }
 
             if (union != null)
@@ -163,7 +170,8 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"导入失败：{ex.Message}");
+            MessageBox.Show($"����ʧ�ܣ�{ex.Message}");
         }
     }
 }
+
